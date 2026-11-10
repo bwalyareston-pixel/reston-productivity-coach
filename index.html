@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#102744">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+
+<title>Reston Productivity Coach</title>
+<style>
+:root{--navy:#102744;--blue:#1f4772;--gold:#d7ad55;--bg:#f3f6fa;--card:#fff;--ink:#182536;--muted:#687789;--line:#e3e9f0;--green:#25845a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,var(--navy),var(--blue));color:white;padding:24px 18px 22px;border-radius:0 0 24px 24px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:12px;letter-spacing:2px;color:#e9c979;font-weight:800}.date{font-size:12px;color:#dce6f2}
+h1{font-size:25px;margin:10px 0 4px}.sub{margin:0;color:#d7e1ed;font-size:13px}
+.wrap{max-width:850px;margin:auto;padding:15px 14px 90px}
+.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 12px;position:sticky;top:0;background:var(--bg);z-index:5}
+.tabs button{border:0;background:#e4eaf1;color:#29405b;border-radius:22px;padding:10px 14px;font-weight:700;white-space:nowrap}
+.tabs button.active{background:var(--navy);color:#fff}
+.page{display:none}.page.active{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:17px;padding:15px;box-shadow:0 3px 12px #1c35500a;margin-bottom:11px}
+.card h2{font-size:16px;margin:0 0 12px}.metric{font-size:26px;font-weight:800;color:var(--navy)}.label{font-size:12px;color:var(--muted)}
+.section-title{font-size:19px;margin:8px 0 12px}.gold{color:var(--gold)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+button.primary{background:var(--navy);color:white;border:0;border-radius:11px;padding:11px 14px;font-weight:700}
+button.secondary{background:#edf2f7;color:var(--navy);border:0;border-radius:10px;padding:9px 12px;font-weight:700}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d6dee8;border-radius:10px;font:inherit;background:#fff;color:var(--ink);margin:5px 0 10px}
+label{font-size:12px;color:var(--muted);font-weight:700}
+.progress{height:9px;background:#e8edf3;border-radius:10px;overflow:hidden;margin:8px 0}.progress span{display:block;height:100%;background:var(--gold);width:0}
+.task{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{width:auto;margin:0;transform:scale(1.2)}.done{text-decoration:line-through;color:#8995a3}
+.small{font-size:12px;color:var(--muted);line-height:1.5}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#edf3f9;color:#2b527b;font-size:11px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{text-align:left;padding:9px 7px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted)}
+.notice{background:#fff8e8;border:1px solid #f0dfb7;padding:12px;border-radius:12px;font-size:12px;line-height:1.5}
+footer{text-align:center;color:#8a96a4;font-size:11px;padding:18px}
+@media(min-width:650px){.grid{grid-template-columns:repeat(4,minmax(0,1fr))}.wrap{padding-top:20px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div class="brand">RESTON • PERSONAL EDITION</div><div class="date" id="today"></div></div>
+<h1>Productivity Coach <span class="gold">✦</span></h1><p class="sub">Small consistent actions. A stronger, more focused you.</p></header>
+<div class="wrap">
+<nav class="tabs">
+<button class="active" data-tab="home">Home</button><button data-tab="tasks">Daily goals</button><button data-tab="study">Study planner</button><button data-tab="checkin">Check-in</button><button data-tab="progress">Progress</button>
+</nav>
+<section class="page active" id="home">
+<h2 class="section-title">Your dashboard</h2>
+<div class="grid">
+<div class="card"><div class="label">Study today</div><div class="metric" id="studyMetric">0h</div><div class="label">Target: 2 hours</div><div class="progress"><span id="studyBar"></span></div></div>
+<div class="card"><div class="label">Sleep last night</div><div class="metric" id="sleepMetric">—</div><div class="label">Aim for around 8 hours</div></div>
+<div class="card"><div class="label">Screen time</div><div class="metric" id="screenMetric">—</div><div class="label">First target: under 6 hours</div></div>
+<div class="card"><div class="label">Today's tasks</div><div class="metric" id="taskMetric">0/3</div><div class="label">Three meaningful priorities</div></div>
+</div>
+<div class="card"><div class="row"><h2>Today's focus</h2><span class="pill" id="dayPill">Daily reset</span></div><p id="quote" style="font-weight:700;color:var(--navy)">Consistency beats intensity.</p><p class="small">Choose three important tasks, complete your study blocks, and leave room for rest.</p><button class="primary" onclick="showTab('tasks')">Set today's goals</button></div>
+<div class="card"><h2>Today's timetable</h2><div id="todaySchedule"></div></div>
+<div class="notice">Reminder: your Saturday church and AYM commitment is 08:00–14:00. Protect that time and plan study around it.</div>
+</section>
+<section class="page" id="tasks">
+<h2 class="section-title">Daily goals</h2>
+<div class="card"><h2>Choose your top three tasks</h2>
+<div id="taskList"></div>
+<label for="newTask">Add or replace a task</label><input id="newTask" placeholder="e.g. Revise Strength of Materials"><button class="primary" onclick="addTask()">Add task</button>
+<p class="small">Tick each task when completed. Your goals reset for a new date, while previous check-ins remain saved.</p></div>
+<div class="card"><h2>Daily habits</h2>
+<div id="habits"></div></div>
+</section>
+<section class="page" id="study">
+<h2 class="section-title">Study planner</h2>
+<div class="card"><h2>Record a study session</h2>
+<label>Subject</label><select id="subject"><option>Strength of Materials</option><option>Applied Hydraulics & Pneumatics</option><option>Thermodynamics</option><option>Machine Design</option><option>Fluid Mechanics</option><option>Make of Machine</option><option>Advanced H.E. Technology</option><option>Project Management</option><option>Other / assignment</option></select>
+<label>Duration (minutes)</label><input type="number" id="minutes" min="5" max="300" value="60">
+<button class="primary" onclick="recordStudy()">Save study session</button><p class="small">Aim for 120 minutes of personal study daily. Use focused blocks and take breaks.</p></div>
+<div class="card"><h2>Weekly class timetable</h2><div id="weeklySchedule"></div></div>
+</section>
+<section class="page" id="checkin">
+<h2 class="section-title">Evening check-in</h2>
+<div class="card"><h2>Record how today went</h2>
+<label>Sleep last night (hours)</label><input id="sleep" type="number" min="0" max="24" step=".5" placeholder="e.g. 7.5">
+<label>Phone screen time today (hours)</label><input id="screen" type="number" min="0" max="24" step=".5" placeholder="e.g. 5">
+<label>Prayer / Bible study</label><select id="spiritual"><option value="">Choose</option><option>Yes</option><option>Partly</option><option>Not today</option></select>
+<label>Exercise or movement</label><select id="exercise"><option value="">Choose</option><option>Yes</option><option>Partly</option><option>Not today</option></select>
+<label>How was your day? (1–5)</label><select id="rating"><option value="">Choose</option><option value="1">1 — Difficult</option><option value="2">2 — Below target</option><option value="3">3 — Average</option><option value="4">4 — Good</option><option value="5">5 — Excellent</option></select>
+<label>Biggest achievement</label><textarea id="achievement" rows="2" placeholder="What went well?"></textarea>
+<label>Biggest challenge / lesson</label><textarea id="challenge" rows="2" placeholder="What will you improve tomorrow?"></textarea>
+<button class="primary" onclick="saveCheckin()">Save today's check-in</button><p id="savedMsg" class="small"></p></div>
+</section>
+<section class="page" id="progress">
+<h2 class="section-title">Your progress</h2>
+<div class="grid">
+<div class="card"><div class="label">Study hours this week</div><div class="metric" id="weekStudy">0h</div></div>
+<div class="card"><div class="label">Check-ins saved</div><div class="metric" id="checkins">0</div></div>
+</div>
+<div class="card"><h2>Recent daily records</h2><div id="history"></div></div>
+<div class="card"><h2>Backup your data</h2><p class="small">Your entries are stored on this device/browser. Export a backup before clearing browser data or changing phones.</p><button class="primary" onclick="exportData()">Export backup</button> <button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"></div>
+</section>
+<footer>RESTON PRODUCTIVITY COACH • Your progress, one day at a time.</footer>
+</div>
+<script>
+const schedule = {
+Monday:[["06:40–07:40","Thermodynamics"],["12:40–13:40","Machine Design"],["15:10–16:10","Fluid Mechanics"]],
+Tuesday:[["06:40–07:40","Applied Hydraulics & Pneumatics"],["09:10–10:10","Applied Hydraulics & Pneumatics"],["15:10–16:10","Applied Hydraulics & Pneumatics"],["17:30–18:30","Advanced H.E. Technology"]],
+Wednesday:[["06:40–07:40","Thermodynamics"],["09:10–10:10","Advanced H.E. Technology"],["10:20–11:20","Strength of Materials"],["15:10–16:10","Make of Machine"]],
+Thursday:[["08:00–09:00","Strength of Materials"],["09:10–10:10","Advanced H.E. Technology"],["14:00–15:00","Fluid Mechanics"]],
+Friday:[["11:30–12:30","Projects"],["12:40–13:40","Thermodynamics"],["14:00–15:00","Machine Design"],["16:20–17:20","Fluid Mechanics"]],
+Saturday:[["08:00–14:00","Church / AYM"]],
+Sunday:[["—","No lectures shown"]]
+};
+const $=id=>document.getElementById(id), todayKey=()=>new Date().toISOString().slice(0,10);
+let data=JSON.parse(localStorage.getItem("restonCoach")||'{"days":{},"sessions":[]}');
+function save(){localStorage.setItem("restonCoach",JSON.stringify(data));}
+function day(){let k=todayKey();if(!data.days[k])data.days[k]={tasks:["Study/revise one course","Complete an important responsibility","Prayer and personal development"],done:[false,false,false],habits:{prayer:false,exercise:false,prepared:false}};return data.days[k];}
+function showTab(t){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===t));document.querySelectorAll(".tabs button").forEach(b=>b.classList.toggle("active",b.dataset.tab===t));}
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function render(){
+let d=day(),k=todayKey(),dt=new Date();$("today").textContent=dt.toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"});
+let mins=data.sessions.filter(s=>s.date===k).reduce((a,s)=>a+s.minutes,0);
+$("studyMetric").textContent=(mins/60).toFixed(1)+"h";$("studyBar").style.width=Math.min(100,mins/120*100)+"%";
+let rec=data.days[k].checkin||{};$("sleepMetric").textContent=rec.sleep!==undefined?rec.sleep+"h":"—";$("screenMetric").textContent=rec.screen!==undefined?rec.screen+"h":"—";
+$("taskMetric").textContent=d.done.filter(Boolean).length+"/3";$("dayPill").textContent=dt.toLocaleDateString(undefined,{weekday:"long"});
+let q=["Consistency beats intensity.","Start before you feel ready.","Small progress is still progress.","Protect your attention; it shapes your future.","Do the next important thing."];$("quote").textContent=q[dt.getDay()%q.length];
+let name=dt.toLocaleDateString(undefined,{weekday:"long"});$("todaySchedule").innerHTML=(schedule[name]||[]).map(x=>`<div class="row" style="padding:7px 0;border-bottom:1px solid var(--line)"><b>${x[0]}</b><span class="small">${x[1]}</span></div>`).join("")||'<p class="small">No classes listed.</p>';
+$("taskList").innerHTML=d.tasks.map((t,i)=>`<div class="task"><input type="checkbox" ${d.done[i]?'checked':''} onchange="toggleTask(${i},this.checked)"><span class="${d.done[i]?'done':''}">${escapeHtml(t)}</span></div>`).join("");
+$("habits").innerHTML=[["prayer","Prayer / Bible study"],["exercise","Exercise / movement"],["prepared","Prepare for tomorrow"]].map(([id,label])=>`<div class="task"><input type="checkbox" ${d.habits[id]?'checked':''} onchange="toggleHabit('${id}',this.checked)"><span>${label}</span></div>`).join("");
+$("weeklySchedule").innerHTML='<table><tr><th>Day</th><th>Class / commitment</th></tr>'+Object.entries(schedule).map(([day,items])=>`<tr><td><b>${day}</b></td><td>${items.map(x=>x[0]+" "+x[1]).join("<br>")}</td></tr>`).join("")+'</table>';
+let start=new Date();start.setDate(start.getDate()-6);let weekMins=data.sessions.filter(s=>new Date(s.date+"T12:00:00")>=start).reduce((a,s)=>a+s.minutes,0);
+$("weekStudy").textContent=(weekMins/60).toFixed(1)+"h";$("checkins").textContent=Object.values(data.days).filter(x=>x.checkin).length;
+let records=Object.entries(data.days).filter(([date,v])=>v.checkin).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,10);
+$("history").innerHTML=records.length?'<table><tr><th>Date</th><th>Study</th><th>Sleep</th><th>Screen</th><th>Rating</th></tr>'+records.map(([date,v])=>`<tr><td>${date}</td><td>${(data.sessions.filter(s=>s.date===date).reduce((a,s)=>a+s.minutes,0)/60).toFixed(1)}h</td><td>${v.checkin.sleep??"—"}h</td><td>${v.checkin.screen??"—"}h</td><td>${v.checkin.rating??"—"}/5</td></tr>`).join("")+'</table>':'<p class="small">Your saved check-ins will appear here.</p>';
+if(rec.sleep!==undefined)$("sleep").value=rec.sleep;if(rec.screen!==undefined)$("screen").value=rec.screen;
+if(rec.spiritual)$("spiritual").value=rec.spiritual;if(rec.exercise)$("exercise").value=rec.exercise;if(rec.rating)$("rating").value=rec.rating;
+if(rec.achievement)$("achievement").value=rec.achievement;if(rec.challenge)$("challenge").value=rec.challenge;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function toggleTask(i,v){day().done[i]=v;save();render()}
+function toggleHabit(id,v){day().habits[id]=v;save()}
+function addTask(){let v=$("newTask").value.trim();if(!v)return;let d=day();if(d.tasks.length>=3){alert("You already have three priority tasks. Complete or edit one of them first.");return;}d.tasks.push(v);d.done.push(false);$("newTask").value="";save();render()}
+function recordStudy(){let m=Number($("minutes").value);if(!m||m<5||m>300){alert("Enter a study duration between 5 and 300 minutes.");return;}data.sessions.push({date:todayKey(),subject:$("subject").value,minutes:m});save();render();alert("Study session saved. Well done!");}
+function saveCheckin(){let d=day();d.checkin={sleep:$("sleep").value===""?undefined:Number($("sleep").value),screen:$("screen").value===""?undefined:Number($("screen").value),spiritual:$("spiritual").value,exercise:$("exercise").value,rating:$("rating").value,achievement:$("achievement").value,challenge:$("challenge").value};save();render();$("savedMsg").textContent="Today's check-in saved on this device.";}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="reston-productivity-backup.json";a.click();URL.revokeObjectURL(a.href);}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let v=JSON.parse(r.result);if(!v.days||!v.sessions)throw Error();data=v;save();render();alert("Backup imported.");}catch(err){alert("That backup file could not be read.");}};r.readAsText(f);}
+render();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body></html>
