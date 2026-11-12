@@ -46,6 +46,16 @@ footer{text-align:center;color:#8a96a4;font-size:11px;padding:18px}
 </nav>
 <section class="page active" id="home">
 <h2 class="section-title">Your dashboard</h2>
+<div class="card" id="nextActivityCard">
+  <div class="row"><h2>My next activity</h2><span class="pill" id="activityStatus">Checking time…</span></div>
+  <p id="activityName" style="font-weight:800;color:var(--navy);margin:8px 0">Loading your timetable…</p>
+  <p class="small" id="activityTime"></p>
+  <div class="row" style="flex-wrap:wrap">
+    <button class="primary" id="enableNotifications" onclick="enableNotifications()">Enable reminders</button>
+    <button class="secondary" onclick="testNotification()">Test notification</button>
+  </div>
+  <p class="small" id="notificationStatus">Reminders can appear while this app is open. Phone/browser settings may affect notifications.</p>
+</div>
 <div class="grid">
 <div class="card"><div class="label">Study today</div><div class="metric" id="studyMetric">0h</div><div class="label">Target: 2 hours</div><div class="progress"><span id="studyBar"></span></div></div>
 <div class="card"><div class="label">Sleep last night</div><div class="metric" id="sleepMetric">—</div><div class="label">Aim for around 8 hours</div></div>
@@ -139,7 +149,32 @@ function recordStudy(){let m=Number($("minutes").value);if(!m||m<5||m>300){alert
 function saveCheckin(){let d=day();d.checkin={sleep:$("sleep").value===""?undefined:Number($("sleep").value),screen:$("screen").value===""?undefined:Number($("screen").value),spiritual:$("spiritual").value,exercise:$("exercise").value,rating:$("rating").value,achievement:$("achievement").value,challenge:$("challenge").value};save();render();$("savedMsg").textContent="Today's check-in saved on this device.";}
 function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="reston-productivity-backup.json";a.click();URL.revokeObjectURL(a.href);}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let v=JSON.parse(r.result);if(!v.days||!v.sessions)throw Error();data=v;save();render();alert("Backup imported.");}catch(err){alert("That backup file could not be read.");}};r.readAsText(f);}
+function parseTimeRange(range){let m=range.match(/(\d{2}):(\d{2})[–-](\d{2}):(\d{2})/);if(!m)return null;return {start:Number(m[1])*60+Number(m[2]),end:Number(m[3])*60+Number(m[4])};}
+function updateNextActivity(){
+ const now=new Date(), dayName=now.toLocaleDateString("en-US",{weekday:"long"}), items=schedule[dayName]||[], current=now.getHours()*60+now.getMinutes();
+ let active=null,next=null;
+ for(const item of items){const t=parseTimeRange(item[0]);if(!t)continue;if(current>=t.start&&current<t.end){active={item,t};break;}if(t.start>current&&!next)next={item,t};}
+ const name=$("activityName"),time=$("activityTime"),status=$("activityStatus");
+ if(active){name.textContent=active.item[1];time.textContent="Happening now • " + active.item[0];status.textContent="Now";}
+ else if(next){name.textContent=next.item[1];time.textContent="Starts at " + next.item[0].split(/[–-]/)[0];status.textContent="Coming up";}
+ else{name.textContent="No more scheduled activities today";time.textContent="Use this time for rest, revision or personal tasks.";status.textContent="Free time";}
+}
+async function enableNotifications(){
+ if(!("Notification" in window)){ $("notificationStatus").textContent="Notifications are not supported by this browser.";return; }
+ try{const permission=await Notification.requestPermission();$("notificationStatus").textContent=permission==="granted"?"Notifications enabled. Keep the app open for activity-start reminders.":"Notifications were not allowed. You can enable them in your browser settings.";}catch(e){$("notificationStatus").textContent="Could not request notification permission in this browser.";}
+}
+function testNotification(){if(!( "Notification" in window)){alert("Notifications are not supported by this browser.");return;}if(Notification.permission!=="granted"){alert("First tap Enable reminders and allow notifications.");return;}new Notification("Reston Productivity Coach",{body:"Your test reminder is working."});}
+let lastReminderKey="";
+function checkActivityReminder(){
+ if(!( "Notification" in window)||Notification.permission!=="granted")return;
+ const now=new Date(),dayName=now.toLocaleDateString("en-US",{weekday:"long"}),items=schedule[dayName]||[],minute=now.getHours()*60+now.getMinutes();
+ for(const item of items){const t=parseTimeRange(item[0]);if(t&&minute===t.start){const key=todayKey()+"-"+item[0]+"-"+item[1];if(key!==lastReminderKey){lastReminderKey=key;new Notification("Time for "+item[1],{body:"Your scheduled activity starts now: "+item[0]+"."});}break;}}
+}
 render();
+updateNextActivity();
+setInterval(()=>{updateNextActivity();checkActivityReminder();},30000);
+updateNextActivity();
+setInterval(updateNextActivity,30000);
 </script>
 <script>
 if ("serviceWorker" in navigator) {
